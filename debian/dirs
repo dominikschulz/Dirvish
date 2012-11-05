@@ -1,0 +1,8 @@
+etc/dirvish
+etc/cron.d
+usr/bin
+usr/sbin
+usr/share/man1
+usr/share/man5
+usr/share/man8
+usr/share/doc/dirvish/examples

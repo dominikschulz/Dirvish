@@ -4,8 +4,8 @@
 # Copyright 2005 by the dirvish project
 # http://www.dirvish.org
 #
-# Last Revision   : $Rev: 658 $
-# Revision date   : $Date: 2009-02-09 20:38:02 +0100 (Mo, 09 Feb 2009) $
+# Last Revision   : $Rev: 652 $
+# Revision date   : $Date: 2009-02-04 19:34:29 +0100 (Mi, 04 Feb 2009) $
 # Last Changed by : $Author: tex $
 # Stored as       : $HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-runall.pl $
 
@@ -27,8 +27,8 @@
 #----------------------------------------------------------------------------
 # Revision information
 my %CodeID = (
-    Rev    => '$Rev: 658 $'     ,
-    Date   => '$Date: 2009-02-09 20:38:02 +0100 (Mo, 09 Feb 2009) $'    ,
+    Rev    => '$Rev: 652 $'     ,
+    Date   => '$Date: 2009-02-04 19:34:29 +0100 (Mi, 04 Feb 2009) $'    ,
     Author => '$Author: tex $'  ,
     URL    => '$HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-runall.pl $' ,
 );
@@ -43,7 +43,6 @@ $VERSION =~  s#[_-]#.#g;       # _ or - to "."
 #----------------------------------------------------------------------------
 use strict;
 use warnings;
-use v5.8.0;	# for ithreads
 
 use Time::ParseDate;
 use POSIX qw(strftime);
@@ -93,8 +92,7 @@ if(!check_pidfile($$Options{pidfile})) {
 my $thmutex = undef;						# Thread mutex
 my @threads = undef;						# List of running threads
 if($$Options{'Threads'}) {
-	#use Thread qw(async);
-	use threads; # use ithreads, requires Perl 5.6+
+	use Thread qw(async);
 	use Thread::Semaphore;
 	$thmutex = Thread::Semaphore->new($$Options{'Threads'});	# Limit the number of running threads
 	@threads = ();
@@ -109,25 +107,15 @@ for my $sched (@{$$Options{Runall}})
 	$$Options{quiet}
 		or printf "%s %s\n", strftime('%H:%M:%S', localtime), $cmd;
 	if($$Options{'Threads'}) {
-		#my $t = async {
-		#	$thmutex->down();			# Semaphore will block until we have a free slot
-		#	$$Options{'no-run'} and $cmd .= " --no-run";	# Actually execute dirvish, even when running
-		#	# in no-run mode, but make it also run in no-run mode
-		#	print "Thread ".Thread->self->tid()." running cmd: $cmd\n" unless $$Options{quiet};
-		#    my $status = system($cmd);
-		#    $thmutex->up();				# Release semaphore lock so another thread can run
-	    #	return $status;
-	    #};
-	    my $t = threads->create(sub {
+		my $t = async {
 			$thmutex->down();			# Semaphore will block until we have a free slot
 			$$Options{'no-run'} and $cmd .= " --no-run";	# Actually execute dirvish, even when running
 			# in no-run mode, but make it also run in no-run mode
-			print "Thread ".threads->tid()." running cmd: $cmd\n" unless $$Options{quiet};
-			sleep (15 * rand(2));
+			print "Thread ".Thread->self->tid()." running cmd: $cmd\n" unless $$Options{quiet};
 		    my $status = system($cmd);
 		    $thmutex->up();				# Release semaphore lock so another thread can run
 	    	return $status;
-	    });
+	    };
 	    push(@threads,$t);
     } else {
     	# Without threads, everything is done sequential

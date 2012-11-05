@@ -8,8 +8,8 @@ package Dirvish;
 #   for other applications until dirvish 1.3.X stabilizes.  This
 #   will eat your babies.
 #
-# Last Revision   : $Rev: 661 $
-# Revision date   : $Date: 2009-02-18 00:17:23 +0100 (Mi, 18 Feb 2009) $
+# Last Revision   : $Rev: 652 $
+# Revision date   : $Date: 2009-02-04 19:34:29 +0100 (Mi, 04 Feb 2009) $
 # Last Changed by : $Author: tex $
 # Stored as       : $HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/Dirvish.pm $
 #
@@ -52,8 +52,8 @@ $CONFDIR = "/etc/dirvish" if ( $CONFDIR =~ /##/ );
 #########################################################################
 
 my %CodeID = (
-	Rev    => '$Rev: 661 $',
-	Date   => '$Date: 2009-02-18 00:17:23 +0100 (Mi, 18 Feb 2009) $',
+	Rev    => '$Rev: 652 $',
+	Date   => '$Date: 2009-02-04 19:34:29 +0100 (Mi, 04 Feb 2009) $',
 	Author => '$Author: tex $',
 	URL    =>
 '$HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/Dirvish.pm $',
@@ -131,7 +131,7 @@ sub find {
 	$rpath =~ s#/*$#/#; 			# make sure path has a trailing slash
 	foreach my $file ( glob("$rpath*") ) {
 		if ( -d $file ) {
-			foreach my $path ( glob("$file/*") ) { # TODO use readdir instead of globbing
+			foreach my $path ( glob("$file/*") ) {
 				if ( -d $path && -e "$path/summary" && !-l $path ) {
 
 					my $summary;
@@ -516,7 +516,8 @@ sub slurplist {
 
 	$filename =~ m(^/) and $f = $filename;
 	if ( !$f && ref( $$Options{vault} ) ne 'CODE' ) {
-		$f = join( '/', $$Options{Bank}, $$Options{vault}, 'dirvish', $filename ); # TODO catfile/catdir
+		$f =
+		  join( '/', $$Options{Bank}, $$Options{vault}, 'dirvish', $filename );
 		-f $f or $f = undef;
 	}
 	$f or $f = "$CONFDIR/$filename";
@@ -694,7 +695,7 @@ sub loadconfig {
 			}
 			if ( $k eq 'client' ) {
 				if ( $modes{r} && ref( $$Options{$k} ) eq 'CODE' ) {
-					loadconfig( $mode . 'og', "$CONFDIR/$val", $Options ); # TDDO catfile
+					loadconfig( $mode . 'og', "$CONFDIR/$val", $Options );
 				}
 				$$Options{$k} = $val;
 				next;
@@ -739,10 +740,10 @@ sub load_master_config {
 	if ( $CONFDIR =~ /dirvish$/ && -f "$CONFDIR.conf" ) {
 		$Config = loadconfig( $mode, "$CONFDIR.conf", $Options );
 	}
-	elsif ( -f "$CONFDIR/master.conf" ) { # TODO catfile
+	elsif ( -f "$CONFDIR/master.conf" ) {
 		$Config = loadconfig( $mode, "$CONFDIR/master.conf", $Options );
 	}
-	elsif ( -f "$CONFDIR/dirvish.conf" ) { # TODO catfile
+	elsif ( -f "$CONFDIR/dirvish.conf" ) {
 		seppuku 250, <<EOERR;
 ERROR: no master configuration file.
 	An old $CONFDIR/dirvish.conf file found.
@@ -800,12 +801,12 @@ sub check_exitcode {
 # with CFQ scheduler to work
 #
 sub check_ionice() {
-	my $out = `uname -r`; # TODO check for OS linux first, then execute shell commands
+	my $out = `uname -r`;
 	chomp($out);
 	my $ionicebin = `which ionice`;
 	chomp($ionicebin);
 	$out =~ m/(\d)\.(\d)\.(\d\d).*/;
-	if ($^O eq "linux"
+	if (   $^O eq "linux"
 		&& -x $ionicebin
 		&& ( $1 > 2 || ( $1 == 2 && ( $2 > 6 || $2 == 6 && $3 >= 13 ) ) ) )
 	{
@@ -822,7 +823,7 @@ sub check_ionice() {
 # nice_ok - test if nice is available and return path to ionice binary
 # needs a linux system and a executable
 #
-sub check_nice() { # TODO check for OS first, then execute shell commands, i.e. not run them on windows
+sub check_nice() {
 	my $nicebin = `which nice`;
 	chomp($nicebin);
 	if ( $^O ne "windows" && -x $nicebin ) {
@@ -844,8 +845,8 @@ sub check_pidfile {
 
 	# Check if this script is already running.
 	if ( -f $pidfile ) {
-		my $pid = qx(cat $pidfile); # TODO do not use cat (windows ...)
-		my $psx = qx(ps x | grep $pid); # TODO windows?
+		my $pid = qx(cat $pidfile);
+		my $psx = qx(ps x | grep $pid);
 		if ( $psx =~ /$pid.*$0/i ) {
 
 			# Check if the script is running too long.

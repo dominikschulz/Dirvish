@@ -1,0 +1,22 @@
+Source: dirvish
+Section: admin
+Priority: optional
+Maintainer: Dominik Schulz <dominik.schulz@gauner.org>
+Build-Depends: debhelper (>= 7)
+Standards-Version: 3.8.0
+Homepage: http://developer.gauner.org/dirvish/ 
+
+Package: dirvish
+Architecture: all
+Depends: rsync (>= 2.5.6-0.1), perl-modules, libtime-modules-perl, libtime-period-perl, ${perl:Depends}
+Recommends: ssh (>= 3.4p1), schedutils, libcurses-ui-perl, libwww-perl
+Description: Filesystem based backup system using rsync 
+ A utility to maintain multiple backups on online storage, each backup is
+ available as a sort of snapshot directory, where common files are shared
+ between the different backup generations. It uses rsync to do the actual
+ copying.
+ .
+ Backups can be made locally or over the network (using ssh).
+ .
+ The release is a experimental development release that should be handled
+ with care.

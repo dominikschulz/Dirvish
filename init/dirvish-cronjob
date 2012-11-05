@@ -3,6 +3,4 @@
 # Daily cronjob for Dirvish
 #
 # 
-echo "dirvish-cronjob starting ..." | wall
 /usr/sbin/dirvish-expire --quiet; /usr/sbin/dirvish-runall --quiet
-echo "dirvish-cronjob finished." | wall

@@ -4,8 +4,8 @@
 # Copyright 2005 by the dirvish project
 # http://www.dirvish.org
 #
-# Last Revision   : $Rev: 660 $
-# Revision date   : $Date: 2009-02-17 18:43:32 +0100 (Di, 17 Feb 2009) $
+# Last Revision   : $Rev: 651 $
+# Revision date   : $Date: 2009-02-04 16:18:18 +0100 (Mi, 04 Feb 2009) $
 # Last Changed by : $Author: tex $
 # Stored as       : $HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-expire.pl $
 
@@ -29,8 +29,8 @@
 #----------------------------------------------------------------------------
 
 my %CodeID = (
-    Rev    => '$Rev: 660 $'     ,
-    Date   => '$Date: 2009-02-17 18:43:32 +0100 (Di, 17 Feb 2009) $'    ,
+    Rev    => '$Rev: 651 $'     ,
+    Date   => '$Date: 2009-02-04 16:18:18 +0100 (Mi, 04 Feb 2009) $'    ,
     Author => '$Author: tex $'  ,
     URL    => '$HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-expire.pl $' ,
 );
@@ -51,8 +51,6 @@ use Time::ParseDate;
 use POSIX qw(strftime);
 use Getopt::Long;
 use Dirvish;
-
-use File::Spec::Functions;
 
 #----------------------------------------------------------------------------
 # SIG Handler
@@ -107,11 +105,11 @@ if ($$Options{vault})
         }
     }
     $bank or seppuku 252, "Cannot find vault $$Options{vault}";
-    Dirvish::find(catdir($bank, $$Options{vault}), $expire_time, $Options, \@expires, \%unexpired);
+    Dirvish::find(join('/', $bank, $$Options{vault}), $expire_time, $Options, \@expires, \%unexpired);
 } else {
     for my $bank (@{$$Options{bank}})
     {
-        Dirvish::find(catdir($bank), $expire_time, $Options, \@expires, \%unexpired);
+        Dirvish::find(join('/', $bank), $expire_time, $Options, \@expires, \%unexpired);
     }
 }
 

@@ -4,8 +4,8 @@
 # Copyright 2005 by the dirvish project
 # http://www.dirvish.org
 #
-# Last Revision   : $Rev: 660 $
-# Revision date   : $Date: 2009-02-17 18:43:32 +0100 (Di, 17 Feb 2009) $
+# Last Revision   : $Rev: 650 $
+# Revision date   : $Date: 2009-02-04 16:09:41 +0100 (Mi, 04 Feb 2009) $
 # Last Changed by : $Author: tex $
 # Stored as       : $HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-locate.pl $
 #
@@ -28,8 +28,8 @@
 # Revision information
 #----------------------------------------------------------------------------
 my %CodeID = (
-    Rev    => '$Rev: 660 $'     ,
-    Date   => '$Date: 2009-02-17 18:43:32 +0100 (Di, 17 Feb 2009) $'    ,
+    Rev    => '$Rev: 650 $'     ,
+    Date   => '$Date: 2009-02-04 16:09:41 +0100 (Mi, 04 Feb 2009) $'    ,
     Author => '$Author: tex $'  ,
     URL    => '$HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish-locate.pl $' ,
 );
@@ -49,8 +49,6 @@ use Time::ParseDate;
 use POSIX qw(strftime);
 use Getopt::Long;
 use Dirvish;
-
-use File::Spec::Functions;
 
 #----------------------------------------------------------------------------
 # SIG Handler
@@ -90,11 +88,11 @@ $fullpattern =~ /\$$/ or $fullpattern .= '[^/]*$';
 my $bank = undef;
 for $b (@{$$Options{bank}})
 {
-    -d catdir($b,$Vault) and $bank = $b;
+    -d "$b/$Vault" and $bank = $b;
 }
 $bank or seppuku 220, "No such vault: $Vault";
 
-opendir VAULT, catdir($bank,$Vault) or seppuku 221, "cannot open vault: $Vault";
+opendir VAULT, "$bank/$Vault" or seppuku 221, "cannot open vault: $Vault";
 my @invault = readdir(VAULT);
 closedir VAULT;
 
@@ -102,10 +100,10 @@ my @images = ();
 for my $image (@invault)
 {
     $image eq 'dirvish' and next;
-    my $imdir = catdir($bank,$Vault,$image);
-    -f catfile($imdir,"summary") or next;
+    my $imdir = "$bank/$Vault/$image";
+    -f "$imdir/summary" or next;
     (-l $imdir && $imdir =~ /current/) and next; # skip current-symlink
-    my $conf = loadconfig('R', catfile($imdir,"summary"), $Options) or next;
+    my $conf = loadconfig('R', "$imdir/summary", $Options) or next;
     $$conf{Status} eq 'success' || $$conf{Status} =~ /^warn/
         or next;
     $$conf{'Backup-complete'} or next;
@@ -128,9 +126,9 @@ for my $image (sort(imsort_locate @images))
     my $imdir = $$image{imdir};
 
     my $index = undef;
-    -f catfile($imdir,"index.bz2") and $index = "bzip2 -d -c ".catfile($imdir,"index.bz2")."|";
-    -f catfile($imdir,"index.gz") and $index = "gzip -d -c ".catfile($imdir,"index.gz")."|";
-    -f catfile($imdir,"index") and $index = "<".catfile($imdir,"index");
+    -f "$imdir/index.bz2" and $index = "bzip2 -d -c $imdir/index.bz2|";
+    -f "$imdir/index.gz" and $index = "gzip -d -c $imdir/index|";
+    -f "$imdir/index" and $index = "<$imdir/index";
     $index or next;
 
     ++$imagecount;

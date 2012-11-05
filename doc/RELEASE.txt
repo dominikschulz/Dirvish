@@ -1,0 +1,32 @@
+DIRVISH RELEASE NOTES
+  Dirvish version 1.2.1 released 18 February 2005
+    *   Corrected ANOTHER logic inversion bug in pre-client and post-client
+        that resulted in the wrong working directory.
+
+    *   Changed rsync code 24 from error to warning.
+
+    *   Changed == to = in the install script.
+
+    *   Allow the use of spaces protected by a backslash in the source tree
+        name.
+
+  Dirvish version 1.2 released 24 February 2003
+    *   Corrected a logic inversion bug in pre-client and post-client that
+        resulted in the scripts running on the server. They will now run on
+        the client as intended.
+
+    *   License changed to OSL.
+
+  Dirvish version 1.1.2 released 15 July 2003
+  Dirvish version 1.1.1 released 26 May 2003
+    No issues
+
+  Dirvish version 1.1 released 17 May 2003
+    *   The master and default config files have been renamed.
+
+         /etc/dirvish/dirvish.conf --> /etc/dirvish/master.conf
+         $VAULT/dirvish/dirvish.conf --> $VAULT/dirvish/default.conf
+
+    *   The rsync-options: option has been replaced with rsync-option: which
+        only accepts one option per specification.
+
