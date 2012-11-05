@@ -7,7 +7,6 @@ todo:
 ! remove/rename incomplete backups
 ! graph data usage (?) - see rsnapgraph
 ! add munin plugin (contrib) to show length of runs, disk-usage, etc.
-! add threads to dirvish-expire? -> no, since IO is the bottleneck anyway
 ? check fslint/findup -m to reduce storage requirements
 ? add alternate concurrency using fork
 ? concurrency: differntiate between local and remote queues (only on local backup at once, but multiple remote)
@@ -15,23 +14,21 @@ todo:
 - incorporate changes from debian packages
 - write to logfile when SIGnaled to be killed
 - see File::Spec::Functions, File::Basename for portablity
+? add threads to dirvish-expire?
 - add email reporing
-- add logging to syslog, see Sys::Syslog (p. 937)
-* use system-independent path separators using File::Spec catfile
+- add logging to syslog
 - clean code (move subs to bottom, add comments, ...) - see rsnapshot
 - http://wiki.dirvish.org/index.cgi?VerboseDebug
 - http://wiki.dirvish.org/index.cgi?LongerSummary
 - http://wiki.dirvish.org/index.cgi?RestoreSomeFiles
 - http://wiki.dirvish.org/index.cgi?ChmodOnExpire
 - resume backups
-- do not run if a certain condition is met (e.g. ioquake is running!)
 
 ideas:
 * web-based frontend for dirivsh (CGI)
 - nice web-page, including security contact, FAQ, screenshots, man page, etc.
 
 done:
-* dbus notifications (kde & gnome) when the backup starts end ends, see test4.pl -> wall in dirvish-conjob
 * rename DirvishHack.pm to Dirvish.pm, refactor all common code to Dirvish.pm
 * use strict
 * use warnings

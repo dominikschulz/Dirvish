@@ -131,8 +131,9 @@ for my $sched (@{$$Options{Runall}})
 	    push(@threads,$t);
     } else {
     	# Without threads, everything is done sequential
-    	my $status = system($cmd) unless $$Options{'no-run'};
-	    $status < 0 || $status / 256 and ++$errors;
+	my $status = 0;
+    	$status = system($cmd) unless $$Options{'no-run'};
+	$status < 0 || $status / 256 and ++$errors;
     }
 }
 

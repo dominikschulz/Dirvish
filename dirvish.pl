@@ -4,8 +4,8 @@
 # Copyright 2005 by the dirvish project
 # http://www.dirvish.org
 #
-# Last Revision   : $Rev: 662 $
-# Revision date   : $Date: 2009-02-18 18:36:10 +0100 (Mi, 18 Feb 2009) $
+# Last Revision   : $Rev: 656 $
+# Revision date   : $Date: 2009-02-08 00:23:29 +0100 (So, 08 Feb 2009) $
 # Last Changed by : $Author: tex $
 # Stored as       : $HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish.pl $
 #
@@ -45,8 +45,8 @@
 # Revision information
 #----------------------------------------------------------------------------
 my %CodeID =
-    ( Rev    => '$Rev: 662 $'     ,
-      Date   => '$Date: 2009-02-18 18:36:10 +0100 (Mi, 18 Feb 2009) $'    ,
+    ( Rev    => '$Rev: 656 $'     ,
+      Date   => '$Date: 2009-02-08 00:23:29 +0100 (So, 08 Feb 2009) $'    ,
       Author => '$Author: tex $'  ,
       URL    => '$HeadURL: https://secure.id-schulz.info/svn/tex/priv/dirvish_1_3_1/dirvish.pl $' ,
     );
@@ -67,9 +67,6 @@ use Getopt::Long;
 use Time::ParseDate;
 use Time::Period;
 use Dirvish;
-
-use Sys::Hostname;
-use File::Spec::Functions;
 
 #----------------------------------------------------------------------------
 # SIG Handler
@@ -200,8 +197,7 @@ GetOptions($Options, qw(
 # determine hostname of the machine running dirvish
 # used to determine if 'rsh' will be used to
 # access the client or not
-#chomp($$Options{Server} = `hostname`);
-$$Options{Server} = hostname(); # using Sys::Hostname for portability
+chomp($$Options{Server} = `hostname`);
 
 my $image;
 if ($$Options{image})
@@ -240,7 +236,7 @@ if(!$$Options{Bank})
     my $bank;
     for $bank (@{$$Options{bank}})
     {
-        if (-d catdir($$Options{Bank}, $$Options{vault}))
+        if (-d "$bank/$$Options{vault}")
         {
             $$Options{Bank} = $bank;
             last;
@@ -250,15 +246,14 @@ if(!$$Options{Bank})
 }
 
 # Construct the full path to the vault
-#my $vault = join('/', $$Options{Bank}, $$Options{vault});
-my $vault = catdir($$Options{Bank}, $$Options{vault});
+my $vault = join('/', $$Options{Bank}, $$Options{vault});
 # Test if the given vault is a directory
 -d $vault or seppuku(221, "ERROR: cannot find vault $$Options{vault}");
 
 my $now = time;
 
 # Define the pidfile location for locking, i.e. only one instance of dirvish on one vault at a time
-my $pidfile = catfile($vault,"dirvish.pid");
+my $pidfile = $vault."/dirvish.pid";
 
 if(!check_pidfile($pidfile)) {
 	print "$0 already running. Aborting at ".strftime('%H:%M:%S', localtime)." - PID: ".$$."\n";
@@ -291,18 +286,18 @@ $image =~ /%/
 seppuku_prefix( join(':', $$Options{vault}, $$Options{branch}, $image) ); 
 
 my $have_temp;
-if (defined($image) && defined($$Options{'image-temp'}) && -d catdir($vault,$$Options{'image-temp'}) && $image eq $$Options{'image-temp'})
+if (defined($image) && defined($$Options{'image-temp'}) && -d "$vault/$$Options{'image-temp'}" && $image eq $$Options{'image-temp'})
 {
     my $iinfo;
-    $iinfo = loadconfig('R', catfile($vault,$image,"summary"), $Options);
+    $iinfo = loadconfig('R', "$vault/$image/summary", $Options);
     $$iinfo{Image} or seppuku(223, "cannot cope with existing $image");
 
     if ($$Options{'no-run'})
     {
-        print "ACTION: rename $vault/$image $vault/$$iinfo{Image}\n\n"; # TODO use catfile/catdir
+        print "ACTION: rename $vault/$image $vault/$$iinfo{Image}\n\n";
         $have_temp = 1;
     } else {
-        rename("$vault/$image", "$vault/$$iinfo{Image}"); # TODO use catfile/catdir
+        rename ("$vault/$image", "$vault/$$iinfo{Image}");
     }
 }
 
@@ -312,16 +307,16 @@ if (defined($image) && defined($$Options{'image-temp'}) && -d catdir($vault,$$Op
     and seppuku(225, "ERROR: image $image already exists in $vault");
 
 $$Options{Reference} = $$Options{reference} || $$Options{branch};
-if (!$$Options{init} && -f "$vault/dirvish/$$Options{Reference}.hist") # TODO use catfile/catdir
+if (!$$Options{init} && -f "$vault/dirvish/$$Options{Reference}.hist")
 {
     my (@images, $i, $s);
-    open(IMAGES, "<", "$vault/dirvish/$$Options{Reference}.hist"); # TODO use catfile/catdir
+    open(IMAGES, "<", "$vault/dirvish/$$Options{Reference}.hist");
     @images = <IMAGES>;
     close IMAGES;
     while ($i = pop(@images))
     {
-        $i =~ s/\s.*$//s; # TODO what does this do?
-        -d "$vault/$i/tree" or next; # TODO use catfile/catdir
+        $i =~ s/\s.*$//s;
+        -d "$vault/$i/tree" or next;
 
         $$Options{Reference} = $i;
         last;
@@ -388,7 +383,7 @@ if ($$Options{Expire} && $$Options{Expire} !~ /Never/i)
 # windows boxen.   Further updated by KHL on 2006-11-11 to fix the problem
 # with eaten characters.
 
-$_ = $$Options{tree} ; # TODO use catfile/catdir / verfiy this works on other platforms
+$_ = $$Options{tree} ;
 s/(\s)/\\$1/g;    # These two lines swap the escaped spaces with
 s/\\\\//g;        # the nonescaped ones.
 s/(\\\s)+/$1/g;   # replace multiple separators with only one
@@ -396,22 +391,14 @@ my ($srctree, $aliastree) = split(/\\\s/, $_)
 	or seppuku(228, "ERROR: no source tree defined");
 $aliastree ||= $srctree;
 
-#my $destree  = join("/", $vault, $image, 'tree');
-my $destree  = catdir($vault, $image, 'tree');
-#my $reftree  = join("/", $vault, $$Options{'Reference'}, 'tree');
-my $reftree  = catdir($vault, $$Options{'Reference'}, 'tree');
-#my $err_temp = join("/", $vault, $image, 'rsync_error.tmp');
-my $err_temp = catfile($vault, $image, 'rsync_error.tmp');
-#my $err_file = join("/", $vault, $image, 'rsync_error');
-my $err_file = catfile($vault, $image, 'rsync_error');
-#my $log_file = join("/", $vault, $image, 'log');
-my $log_file = catfile($vault, $image, 'log');
-#my $log_temp = join("/", $vault, $image, 'log.tmp');
-my $log_temp = catfile($vault, $image, 'log.tmp');
-#my $exl_file = join("/", $vault, $image, 'exclude');
-my $exl_file = catfile($vault, $image, 'exclude');
-#my $fsb_file = join("/", $vault, $image, 'fsbuffer');
-my $fsb_file = catfile($vault, $image, 'fsbuffer');
+my $destree  = join("/", $vault, $image, 'tree');
+my $reftree  = join("/", $vault, $$Options{'Reference'}, 'tree');
+my $err_temp = join("/", $vault, $image, 'rsync_error.tmp');
+my $err_file = join("/", $vault, $image, 'rsync_error');
+my $log_file = join("/", $vault, $image, 'log');
+my $log_temp = join("/", $vault, $image, 'log.tmp');
+my $exl_file = join("/", $vault, $image, 'exclude');
+my $fsb_file = join("/", $vault, $image, 'fsbuffer');
 
 log_file( $log_file );
 fsb_file( $fsb_file );
@@ -441,12 +428,12 @@ scalar @{$$Options{exclude}}
 
 if (!$$Options{'no-run'})
 {
-    mkdir "$vault/$image", 0700 # TODO catfile
+    mkdir "$vault/$image", 0700
         or seppuku(230, "mkdir $vault/$image failed");
     mkdir $destree, 0755;
 
-    open(SUMMARY, ">", "$vault/$image/summary") # TODO catfile
-        or seppuku(231, "cannot create $vault/$image/summary");  # TODO use catfile/catdir
+    open(SUMMARY, ">", "$vault/$image/summary")
+        or seppuku(231, "cannot create $vault/$image/summary"); 
 } else {
     open(SUMMARY, ">-");
 }
@@ -526,7 +513,7 @@ my @cmd = (
 	(($$Options{ionice} && $$Options{ionice} > -1 && &check_ionice()) ? &check_ionice()." -n".$$Options{ionice} : ''),
     ($$Options{rsync} ? $$Options{rsync} : 'rsync'),
     @rsyncargs,
-    $rclient . $srctree . (($srctree =~ m#/$#) ? '' : '/'),	# make sure that path end in a slash TODO catdir?
+    $rclient . $srctree . (($srctree =~ m#/$#) ? '' : '/'),	# make sure that path end in a slash
     $destree
     );
 
@@ -749,7 +736,7 @@ if ($status{code})
     # -s: create a symbolic link
     # -f: Force, overwrite existing
     # -T: threat target as file (prevent nested links)
-    my $cmd = "ln -sfT $vault/$image/ $vault/current"; # TODO use catfile/catdir, use symlink()
+    my $cmd = "ln -sfT $vault/$image/ $vault/current";
     system($cmd);
 }
 
@@ -845,7 +832,7 @@ if ($Status eq 'success')
 # If permissions for the meta-information
 # files are given, set them.
 (defined($$Options{'meta-perm'}) && length($$Options{'meta-perm'}))
-    and chmod oct($$Options{'meta-perm'}),  # TODO use catfile/catdir
+    and chmod oct($$Options{'meta-perm'}),
         "$vault/$image/summary",
         "$vault/$image/rsync_error",
         "$vault/$image/log";
@@ -853,13 +840,13 @@ if ($Status eq 'success')
 $Status eq 'success' or exit 149;
 
 (defined($$Options{log}) && $$Options{log} =~ /.*(gzip)|(bzip2)/)
-    and system "$$Options{log} $vault/$image/log";  # TODO use catfile/catdir
+    and system "$$Options{log} $vault/$image/log";
 
 # Create the index{,.gz,.bz2} if not disabled 
 if ($$Options{index} && $$Options{index} !~/^no/i)
 {
-    open(INDEX, ">", "$vault/$image/index");  # TODO use catfile/catdir
-    open(FIND, "find $destree -ls|") # TODO find on windows?
+    open(INDEX, ">", "$vault/$image/index");
+    open(FIND, "find $destree -ls|")
         or seppuku(21, "dirvish $vault:$image cannot build index");
 
     while (<FIND>)
